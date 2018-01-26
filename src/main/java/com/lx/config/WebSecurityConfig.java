@@ -9,8 +9,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.session.SessionRegistry;
-import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -22,13 +20,15 @@ import java.util.Collection;
 @EnableWebSecurity
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
+//    @Autowired
+//    SessionRegistry sessionRegistry;
+
     @Autowired
-    SessionRegistry sessionRegistry;
+    private PasswordEncoder passwordEncoder;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
-                .csrf().disable()
                 .authorizeRequests()
                 .antMatchers("/login").permitAll()
                 .antMatchers("/logout").permitAll()
@@ -37,21 +37,50 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/css/**").permitAll()
                 .antMatchers("/fonts/**").permitAll()
                 .antMatchers("/favicon.ico").permitAll()
-                .antMatchers("/").permitAll()
+                .antMatchers("/", "/home").permitAll()
                 .anyRequest().authenticated()
                 .and()
-                .sessionManagement().maximumSessions(1).sessionRegistry(sessionRegistry)
-                .and()
+                .formLogin()
+                .permitAll()
                 .and()
                 .logout()
-                .invalidateHttpSession(true)
-                .clearAuthentication(true)
+                .permitAll()
                 .and()
-                .httpBasic();
+                .exceptionHandling().accessDeniedPage("/login")
+                .and()
+                .csrf()
+                .disable();
+//        http
+//                .csrf().disable()
+//                .authorizeRequests()
+//                .antMatchers("/login").permitAll()
+//                .antMatchers("/logout").permitAll()
+//                .antMatchers("/images/**").permitAll()
+//                .antMatchers("/js/**").permitAll()
+//                .antMatchers("/css/**").permitAll()
+//                .antMatchers("/fonts/**").permitAll()
+//                .antMatchers("/favicon.ico").permitAll()
+//                .antMatchers("/").permitAll()
+//                .anyRequest().authenticated()
+//                .and()
+//                .formLogin()
+//                .permitAll()
+//                .and()
+//                .sessionManagement().maximumSessions(1).sessionRegistry(sessionRegistry)
+//                .and()
+//                .and()
+//                .logout()
+//                .invalidateHttpSession(true)
+//                .clearAuthentication(true)
+//                .and()
+//                .httpBasic();
     }
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        auth
+                .inMemoryAuthentication()
+                .withUser("user").password("password").roles("USER");
         UserDetailsService urlUserService = new UserDetailsService() {
             @Override
             public UserDetails loadUserByUsername(String s) throws UsernameNotFoundException {
@@ -63,7 +92,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
                     @Override
                     public String getPassword() {
-                        return null;
+                        return passwordEncoder.encode(s);
                     }
 
                     @Override
@@ -73,27 +102,32 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
                     @Override
                     public boolean isAccountNonExpired() {
-                        return false;
+                        return true;
                     }
 
                     @Override
                     public boolean isAccountNonLocked() {
-                        return false;
+                        return true;
                     }
 
                     @Override
                     public boolean isCredentialsNonExpired() {
-                        return false;
+                        return true;
                     }
 
                     @Override
                     public boolean isEnabled() {
-                        return false;
+                        return true;
                     }
                 };
             }
         };
-        auth.userDetailsService(urlUserService).passwordEncoder(new PasswordEncoder() {
+        auth.userDetailsService(urlUserService).passwordEncoder(passwordEncoder());
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new PasswordEncoder() {
 
             @Override
             public String encode(CharSequence rawPassword) {
@@ -104,12 +138,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             public boolean matches(CharSequence rawPassword, String encodedPassword) {
                 return encodedPassword.equals(DigestUtils.md5Hex((String) rawPassword));
             }
-        });
+        };
     }
 
-    @Bean
-    public SessionRegistry getSessionRegistry() {
-        SessionRegistry sessionRegistry = new SessionRegistryImpl();
-        return sessionRegistry;
-    }
+//    @Bean
+//    public SessionRegistry getSessionRegistry() {
+//        SessionRegistry sessionRegistry = new SessionRegistryImpl();
+//        return sessionRegistry;
+//    }
 }

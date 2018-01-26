@@ -4,34 +4,49 @@
         "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
 
 <generatorConfiguration>
-    <properties resource="application.properties"/>
-
-    <context id="Mysql" targetRuntime="MyBatis3Simple" defaultModelType="flat">
+    <context id="MysqlContext" targetRuntime="MyBatis3Simple" defaultModelType="flat">
         <property name="beginningDelimiter" value="`"/>
         <property name="endingDelimiter" value="`"/>
+        <property name="javaFileEncoding" value="UTF-8"/>
 
-        <plugin type="tk.mybatis.mapper.generator.MapperPlugin">
-            <property name="mappers" value="tk.mybatis.springboot.util.MyMapper"/>
+        <plugin type="com.lx.TkMapperPlugin">
+            <property name="mappers" value="tk.mybatis.mapper.common.Mapper"/>
         </plugin>
 
-        <jdbcConnection driverClass="${druid.driver-class}"
-                        connectionURL="${druid.url}"
-                        userId="${druid.username}"
-                        password="${druid.password}">
+        <plugin type="com.lx.LombokPlugin">
+        </plugin>
+
+        <plugin type="org.mybatis.generator.plugins.SerializablePlugin"/>
+
+        <plugin type="tk.mybatis.mapper.generator.TemplateFilePlugin">
+            <property name="targetProject" value="src/test/java"/>
+            <property name="targetPackage" value="test.mapper"/>
+            <property name="templatePath" value="generator/mapper.ftl"/>
+            <property name="mapperSuffix" value="Dao"/>
+            <property name="fileName" value="${tableClass.shortClassName}${mapperSuffix}.java"/>
+        </plugin>
+
+        <commentGenerator type="com.lx.CustomCommentGenerator">
+            <!--<property name="suppressAllComments" value="true"/>-->
+        </commentGenerator>
+
+        <jdbcConnection driverClass="com.mysql.jdbc.Driver"
+                        connectionURL="jdbc:mysql://10.199.226.177:3306/vip_express"
+                        userId="root"
+                        password="123456">
+            <property name="remarksReporting" value="true"/>
+            <property name="useInformationSchema" value="true"/>
         </jdbcConnection>
 
-        <javaModelGenerator targetPackage="tk.mybatis.springboot.model" targetProject="src/main/java"/>
+        <javaModelGenerator targetPackage="com.lx.model" targetProject="src\main\java">
+        </javaModelGenerator>
 
-        <sqlMapGenerator targetPackage="mapper" targetProject="src/main/resources"/>
+        <sqlMapGenerator targetPackage="mapper" targetProject="src\main\resources"/>
 
-        <javaClientGenerator targetPackage="tk.mybatis.springboot.mapper" targetProject="src/main/java"
-                             type="XMLMAPPER"/>
+        <javaClientGenerator type="XMLMAPPER" targetPackage="com.lx.dao" targetProject="src\main\java"/>
 
-        <table tableName="%">
-            <!--mysql 配置-->
-            <generatedKey column="id" sqlStatement="Mysql" identity="true"/>
-            <!--oracle 配置-->
-            <!--<generatedKey column="id" sqlStatement="select SEQ_{1}.nextval from dual" identity="false" type="pre"/>-->
+        <table tableName="vip_privilege">
+            <generatedKey column="id" sqlStatement="Mysql"/>
         </table>
     </context>
 </generatorConfiguration>

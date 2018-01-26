@@ -7,7 +7,7 @@ import tk.mybatis.spring.annotation.MapperScan;
 
 @SpringBootApplication
 @EnableSwagger2
-@MapperScan(basePackages = "tk.mybatis.springboot.mapper")
+@MapperScan(basePackages = "com.lx.dao")
 public class AdminBackendApplication {
 
 	public static void main(String[] args) {
