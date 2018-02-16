@@ -6,8 +6,10 @@ import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSeriali
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.session.data.redis.config.ConfigureRedisAction;
 import org.springframework.session.data.redis.config.annotation.web.http.EnableRedisHttpSession;
-import org.springframework.session.web.http.CookieHttpSessionStrategy;
-import org.springframework.session.web.http.HttpSessionStrategy;
+import org.springframework.session.web.http.CookieHttpSessionIdResolver;
+//import org.springframework.session.web.http.CookieHttpSessionStrategy;
+import org.springframework.session.web.http.HttpSessionIdResolver;
+//import org.springframework.session.web.http.HttpSessionStrategy;
 
 /**
  * Spring的定时任务调度器会尝试获取一个注册过的 task scheduler来做任务调度，它会尝试通过BeanFactory.getBean的方法来获取一个注册过的scheduler bean，获取的步骤如下：
@@ -28,10 +30,17 @@ import org.springframework.session.web.http.HttpSessionStrategy;
 public class SessionConfig {
 
 
+//    @Bean
+//    public HttpSessionStrategy httpSessionStrategy() {
+//        return new CookieHttpSessionStrategy();
+//    }
+
+
     @Bean
-    public HttpSessionStrategy httpSessionStrategy() {
-        return new CookieHttpSessionStrategy();
+    public HttpSessionIdResolver httpSessionIdResolver() {
+        return new CookieHttpSessionIdResolver();
     }
+
 
 
     @Bean
